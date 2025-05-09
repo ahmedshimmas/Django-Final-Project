@@ -54,11 +54,15 @@ class LeaveAPI(viewsets.ModelViewSet):
     search_fields = ['employee__first_name', 'employee__last_name', 'leave_type'] #using double underscore to access the related model fields, employee is a foreign key in leave model and we can access the employee fields using double underscore.
 
     #creating custom permissions:
+
+    # 1. custom permission to allow only the leave owner to edit the leave object
     def get_permissions(self): #use get_permissions if we want different permissions for different actions.
         if self.action in ['update', 'partial_update', 'destroy']: #creates permissions for update, partial_update, and destroy actions.
             return [IsAuthenticated(), IsObjectOwner()] 
         return [IsAuthenticated()] #for other actions, we just need to check if the user is authenticated or not.
     
+
+    # 2. custom permission to link the logged in user to the employee object.
     def perform_create(self, serializer): #overriding the perform_create method to link the logged in user to the employee we create.
         try:
             employee = models.Employee.objects.get(user=self.request.user) #to get the employee object for the logged in user.
@@ -87,7 +91,7 @@ class RegisterAPI(viewsets.ModelViewSet):
 
     def create(self, request): #overriding the create method to create a user
         serializer = self.get_serializer(data=request.data) 
-        serializer.is_valid(raise_exception=True) 
+        serializer.is_valid(raise_exception=True)
         user = serializer.save() #saving the user data to the database
         user.username = user.email #setting the username to email, as we are using email as the username field in the custom user model.
         user.set_password(serializer.validated_data['password']) #setting the password to hashed password, as we are using the custom user model.
