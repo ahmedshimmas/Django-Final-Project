@@ -1,0 +1,77 @@
+
+Detailed Overview of Today's Work
+
+1. 🔐 Custom User Setup
+- Custom Model: You created a custom user model `User` by subclassing `AbstractUser`.
+- Email as Login Field:
+  - Changed the login field to `email` using `USERNAME_FIELD = 'email'`.
+  - Set `REQUIRED_FIELDS = ['username']` to retain `username` as a required field during registration.
+- Benefit: This aligns your system to use email-based authentication, which is more common in modern apps.
+
+2. 📝 User Registration and Authentication
+- Register API:
+  - Created a `RegisterAPI` using `ModelViewSet`.
+  - Overrode the `create()` method to:
+    - Validate and save user data.
+    - Set the `username` to the user's email.
+    - Hash the password using `set_password()`.
+    - Remove the password field from the response for security.
+- Login:
+  - Used DRF's built-in `obtain_auth_token` view at `/login/`.
+  - Authenticated users receive a token for future API requests.
+
+3. 👤 Linking `Employee` to `User`
+- Model Update:
+  - Added a new field to the `Employee` model:  
+    ```python
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    ```
+- Migration Challenge:
+  - Handled the migration warning about adding a non-nullable field by providing a one-off default.
+- Auto-linking Logic:
+  - In `EmployeeAPI`, implemented:
+    ```python
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+    ```
+  - This ensures that when a user creates an employee, the `Employee` object is automatically linked to their `User` account.
+
+4. 📝 Creating Leave Records Without Sending `employee`
+- Problem: You were required to manually provide the `employee` field when creating a `Leave`.
+- Fix:
+  - Used `perform_create()` in `LeaveAPI`:
+    ```python
+    def perform_create(self, serializer):
+        employee = Employee.objects.get(user=self.request.user)
+        serializer.save(employee=employee)
+    ```
+  - Now, the API assigns the correct `employee` automatically based on the logged-in user.
+
+5. 🔄 Updating Leave Records with PUT and PATCH
+- Issue: `PUT` requests were requiring all fields, even for minor updates.
+- Solution:
+  - Overrode the `update()` method in `LeaveAPI`:
+    ```python
+    def update(self, request, *args, **kwargs):
+        partial = request.method == "PATCH"
+        return super().update(request, *args, **kwargs, partial=partial)
+    ```
+  - This lets you:
+    - Use `PATCH` for partial updates (e.g., just the `reason`).
+    - Use `PUT` when replacing all fields.
+- Error Fix:
+  - Resolved a `TypeError` caused by incorrect ordering of `partial` argument.
+  - Also fixed a `ValidationError` caused by required fields not being provided in full.
+
+6. ✅ Successfully Tested:
+- Registered users via `POST /api/register/`.
+- Logged in and obtained auth tokens via `/login/`.
+- Created `Employee` records linked to logged-in users.
+- Created `Leave` records without sending `employee` field.
+- Updated leave records using both `PUT` and `PATCH`.
+
+What’s Next (tomorrow):
+- #5: Implement IsLeaveOwner Permission
+  - Write a custom `IsLeaveOwner` permission class.
+  - Apply it in `LeaveAPI` to restrict update/delete to the original creator only.
+- Continue improving your permission logic and prepare for advanced DRF topics (e.g., nested views, signals, or audit logs).
