@@ -1,0 +1,81 @@
+
+Django REST Framework (DRF) — ViewSet and Authentication Guide
+==============================================================
+
+🔹 VIEWSETS
+
+1. ModelViewSet:
+-----------------
+class YourModelViewSet(viewsets.ModelViewSet):
+    queryset = YourModel.objects.all()
+    serializer_class = YourSerializer
+
+    # Optional hooks:
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
+
+    def get_queryset(self):
+        user = self.request.user
+        return YourModel.objects.filter(user=user)
+
+
+🔹 COMMONLY USED ARGS
+
+- self: refers to the class instance.
+- request: holds the HTTP request object.
+- *args: variable length argument list (tuple).
+- **kwargs: keyword arguments dictionary (used for things like 'pk').
+
+
+🔹 AUTHENTICATION & PERMISSIONS
+
+1. AUTHENTICATION CLASSES
+--------------------------
+- TokenAuthentication
+- SessionAuthentication
+- BasicAuthentication
+
+Set globally in settings.py:
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+}
+
+Or per-viewset:
+class YourViewSet(viewsets.ModelViewSet):
+    authentication_classes = [TokenAuthentication]
+
+2. PERMISSION CLASSES
+----------------------
+- IsAuthenticated
+- IsAdminUser
+- AllowAny
+- Custom permission (e.g., IsOwnerPermission)
+
+Set globally in settings.py:
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
+
+Or per-viewset:
+class YourViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated, IsOwnerPermission]
+
+
+🔹 USEFUL HOOKS IN VIEWS
+
+- perform_create(self, serializer): Called by create() after serializer.is_valid()
+- perform_update(self, serializer): Called by update() after validation
+- get_queryset(self): Customize queryset based on request.user or other conditions
+

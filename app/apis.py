@@ -108,7 +108,7 @@ class RegisterAPI(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         user = serializer.save() #saving the user data to the database
         user.username = user.email #setting the username to email, as we are using email as the username field in the custom user model.
-        user.set_password(serializer.validated_data['password']) #setting the password to hashed password, as we are using the custom user model.
+        user.set_password(serializer.validated_data['password']) #setting the password to hashed password, as we are using the custom user model. also validated data is dict.
         user.save() #saving the user data to the database
         data = serializers.UserSerializer(user).data #serializing the user data to return in the response
         del data['password'] #deleting the password field from the response data, as we don't want to expose the password in the response.
