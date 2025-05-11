@@ -55,16 +55,11 @@ class LeaveAPI(viewsets.ModelViewSet):
     ordering_fields = ['applied_on', 'start_date']
     search_fields = ['employee__first_name', 'employee__last_name', 'leave_type'] #using double underscore to access the related model fields, employee is a foreign key in leave model and we can access the employee fields using double underscore.
 
-    #creating custom permissions:
+    #creating custom permissions:    
 
-    # 1. custom permission to allow only the leave owner to edit the leave object
-    def get_permissions(self): #use get_permissions if we want different permissions for different actions.
-        if self.action in ['update', 'partial_update', 'destroy']: #creates permissions for update, partial_update, and destroy actions.
-            return [IsAuthenticated(), IsObjectOwner()] 
-        return [IsAuthenticated()] #for other actions, we just need to check if the user is authenticated or not.
-    
 
-    # 2. custom permission to link the logged in user to the employee object.
+
+    # 1. custom permission to link the logged in user to the employee object.
     def perform_create(self, serializer): #overriding the perform_create method to link the logged in user to the employee we create.
         try:
             employee = models.Employee.objects.get(user=self.request.user) #to get the employee object for the logged in user.
@@ -72,6 +67,23 @@ class LeaveAPI(viewsets.ModelViewSet):
             raise ValidationError("No employee profile found for this user.")
 
         serializer.save(employee=employee) #saving the employee object to the leave model. (employee field in leave model = employee variable defined above)
+
+
+
+    # 2. custom permission to allow only the leave owner to edit the leave object
+    def get_permissions(self): #use get_permissions if we want different permissions for different actions.
+        if self.action in ['update', 'partial_update', 'destroy']: #creates permissions for update, partial_update, and destroy actions.
+            return [IsAuthenticated(), IsObjectOwner()] 
+        return [IsAuthenticated()] #for other actions, we just need to check if the user is authenticated or not.
+    
+
+
+    # 3. allow leave owner to see only their own leaves
+    def get_queryset(self):
+        owner = models.Employee.objects.get(user=self.request.user) #get the employee object for the logged in user.
+        return models.Leave.objects.filter(employee=owner) #filter and show only those leaves whose employee field = owner (leave owner).
+
+
 
     # def update(self, request, *args, **kwargs):
     # # Checking if the request method is PATCH for partial updates

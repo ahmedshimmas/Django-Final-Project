@@ -1,0 +1,51 @@
+Django REST Framework (DRF) - Method Signatures & Argument Guide
+
+✅ Common DRF ViewSet Method Signatures
+
+1. def get_queryset(self)
+   - Purpose: Return a filtered queryset
+   - Notes: Do NOT add 'request' as an argument
+
+2. def get_serializer_class(self)
+   - Purpose: Dynamically select serializer class
+
+3. def perform_create(self, serializer)
+   - Purpose: Modify object before saving (e.g. auto-assign user)
+
+4. def create(self, request, *args, **kwargs)
+   - Purpose: Custom logic for creating objects
+
+5. def update(self, request, *args, **kwargs)
+   - Purpose: Handle full updates (PUT)
+
+6. def partial_update(self, request, *args, **kwargs)
+   - Purpose: Handle partial updates (PATCH)
+
+7. def destroy(self, request, *args, **kwargs)
+   - Purpose: Handle delete operations
+
+8. def retrieve(self, request, *args, **kwargs)
+   - Purpose: Retrieve a single object
+
+9. def list(self, request, *args, **kwargs)
+   - Purpose: List multiple objects
+
+10. def get_permissions(self)
+    - Purpose: Assign permission classes dynamically
+
+
+✅ What Each Argument Means
+
+- self      → Refers to the class instance (always required)
+- request   → The HTTP request (data, headers, user info)
+- *args     → Additional positional arguments (rarely used directly)
+- **kwargs  → Keyword arguments from URL patterns (e.g. pk, slug)
+
+
+🧠 Quick Rules of Thumb
+
+- Only use 'request' in methods that directly interact with HTTP (like create, update)
+- 'serializer' is used only in perform_create and similar serializer-bound methods
+- Use self.request.user to access the current user anywhere in the view
+- Avoid passing 'request' into get_queryset; instead use self.request if needed
+

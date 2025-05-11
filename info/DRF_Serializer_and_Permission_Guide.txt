@@ -1,0 +1,40 @@
+
+===============================
+DRF Serializers: Common Methods
+===============================
+
+1. __init__(self, *args, **kwargs)
+   - Called when the serializer is instantiated.
+   - args: data, instance, etc.
+   - kwargs: context, partial, many, etc.
+
+2. create(self, validated_data)
+   - Used in serializers.ModelSerializer when creating a new instance.
+   - validated_data: Dictionary of validated input data.
+
+3. update(self, instance, validated_data)
+   - Called when updating an existing instance.
+   - instance: The existing model instance.
+   - validated_data: The updated values.
+
+4. validate(self, data)
+   - Used for object-level validation.
+   - data: Dictionary of input fields.
+
+5. validate_<fieldname>(self, value)
+   - Used for field-level validation.
+   - value: The value of the specific field.
+
+===============================
+DRF Permissions: Common Methods
+===============================
+
+1. has_permission(self, request, view)
+   - Controls general access to the view.
+   - request: The HTTP request object.
+   - view: The view being accessed.
+
+2. has_object_permission(self, request, view, obj)
+   - Controls access to specific objects (e.g., for Retrieve, Update, Delete).
+   - obj: The specific object being accessed.
+
