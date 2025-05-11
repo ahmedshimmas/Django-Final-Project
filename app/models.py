@@ -7,7 +7,7 @@ from app import choices
 # Create your models here.
 
 class Employee(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True) #using OneToOneField to create a one to one relationship with the user model. This will create a user for each employee. if we use ForeignKey, it will create a many to one relationship with the user model.
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True) #using OneToOneField to create a one to one relationship with the User model registered in settings. This will create a user for each employee. if we use ForeignKey, it will create a many to one relationship with the user model.
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     email = models.EmailField(unique=True)

@@ -23,8 +23,10 @@ class EmployeeAPI(viewsets.ModelViewSet):
     ordering_fields = ['date_joined', 'first_name'] #(endpoint)/?ordering=date_joined, or /?ordering=date_joined,first_name
     search_fields = ['first_name', 'last_name', 'email'] #(endpoint)/?search=John, or /?search=John&is_active=True&department=HR
 
-    def perform_create(self, serializer): #overriding the perform_create method to link the logged in user to the employee we create.
-        serializer.save(user=self.request.user)
+    def perform_create(self, serializer): #overriding the perform_create. when a user logs in and creates an employee object, it is automatically linked to the user object using this function.
+        if models.Employee.objects.filter(user=self.request.user).exists():
+            raise ValidationError("Integrity Error: You already have an employee profile.")
+        serializer.save(user=self.request.user) #(user field in model = logged in user)
 
 
 
@@ -69,7 +71,7 @@ class LeaveAPI(viewsets.ModelViewSet):
         except models.Employee.DoesNotExist:
             raise ValidationError("No employee profile found for this user.")
 
-        serializer.save(employee=employee) #saving the employee object to the leave model.
+        serializer.save(employee=employee) #saving the employee object to the leave model. (employee field in leave model = employee variable defined above)
 
     # def update(self, request, *args, **kwargs):
     # # Checking if the request method is PATCH for partial updates
