@@ -55,9 +55,8 @@ class LeaveAPI(viewsets.ModelViewSet):
     ordering_fields = ['applied_on', 'start_date']
     search_fields = ['employee__first_name', 'employee__last_name', 'leave_type'] #using double underscore to access the related model fields, employee is a foreign key in leave model and we can access the employee fields using double underscore.
 
+
     #creating custom permissions:    
-
-
 
     # 1. custom permission to link the logged in user to the employee object.
     def perform_create(self, serializer): #overriding the perform_create method to link the logged in user to the employee we create.
