@@ -84,15 +84,15 @@ class LeaveAPI(viewsets.ModelViewSet):
 
 
 
-    # def update(self, request, *args, **kwargs):
-    # # Checking if the request method is PATCH for partial updates
-    #     if request.method == "PATCH":
-    #         partial = True  # Only update the fields provided in the request
-    #     else:
-    #         partial = False  # PUT method (full update) will require all fields
+    def update(self, request, *args, **kwargs):
+    # Checking if the request method is PATCH for partial updates
+        if request.method == "PATCH":
+            partial = True  # Only update the fields provided in the request
+        else:
+            partial = False  # PUT method (full update) will require all fields
     
-    # # Call the parent class's update method, passing the `partial` flag
-    #     return super().update(request, *args, **kwargs)
+    # Call the parent class's update method, passing the `partial` flag
+        return super().update(request, *args, **kwargs)
 
 
 
