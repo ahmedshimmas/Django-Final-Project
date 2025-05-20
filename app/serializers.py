@@ -51,3 +51,9 @@ class UserSerializer(serializers.ModelSerializer):
         if not attrs.get('email'):
             raise serializers.ValidationError("Email is required")
         return attrs
+
+class ContactUsSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=100)
+    to_email = serializers.EmailField()
+    subject = serializers.CharField(max_length=100)
+    message = serializers.CharField(max_length=500)

@@ -1,14 +1,16 @@
 from rest_framework import viewsets #to create api views
 from rest_framework import filters #for filtering, ordering, and searching
 from django_filters.rest_framework import DjangoFilterBackend #for filtering
-from rest_framework.permissions import IsAuthenticated #to check if the user is authenticated or not
+from rest_framework.permissions import IsAuthenticated, AllowAny #to check if the user is authenticated or not
 from rest_framework.response import Response
+from django.core.mail import send_mail #default django function to send email
 from rest_framework.exceptions import ValidationError #to raise validation errors
+from rest_framework.decorators import action #to create custom actions in viewsets
 from app import models
 from app import serializers
 from app.pagination import CustomPagination 
 from app.permissions import IsObjectOwner 
-
+from finalproject import settings
 
 
 class EmployeeAPI(viewsets.ModelViewSet):
@@ -51,8 +53,8 @@ class LeaveAPI(viewsets.ModelViewSet):
     pagination_class = CustomPagination #to enable pagination for this api
 
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
-    filterset_fields = ['employee', 'leave_type', 'status']
-    ordering_fields = ['applied_on', 'start_date']
+    filterset_fields = ['employee', 'leave_type', 'status'] #(endpoint)/?employee=1, or /?leave_type=Casual Leave, or /?status=Approved
+    ordering_fields = ['applied_on', 'start_date'] 
     search_fields = ['employee__first_name', 'employee__last_name', 'leave_type'] #using double underscore to access the related model fields, employee is a foreign key in leave model and we can access the employee fields using double underscore.
 
 
@@ -84,15 +86,15 @@ class LeaveAPI(viewsets.ModelViewSet):
 
 
 
-    def update(self, request, *args, **kwargs):
-    # Checking if the request method is PATCH for partial updates
-        if request.method == "PATCH":
-            partial = True  # Only update the fields provided in the request
-        else:
-            partial = False  # PUT method (full update) will require all fields
+    # def update(self, request, *args, **kwargs):
+    # # Checking if the request method is PATCH for partial updates
+    #     if request.method == "PATCH":
+    #         partial = True  # Only update the fields provided in the request
+    #     else:
+    #         partial = False  # PUT method (full update) will require all fields
     
-    # Call the parent class's update method, passing the `partial` flag
-        return super().update(request, *args, **kwargs)
+    # # Call the parent class's update method, passing the `partial` flag
+    #     return super().update(request, *args, **kwargs)
 
 
 
@@ -113,3 +115,25 @@ class RegisterAPI(viewsets.ModelViewSet):
         del data['password'] #deleting the password field from the response data, as we don't want to expose the password in the response.
         return Response('User registered successfully', status=201) 
             
+
+
+class PublicViewSet(viewsets.ViewSet):
+    permission_classes = [AllowAny] 
+
+    @action(detail=False, methods=['post'])
+    def contact_us(self, request):
+        serializer = serializers.ContactUsSerializer(data=request.data)
+        if serializer.is_valid():
+            data = serializer.validated_data
+            subject = f"Contact Us: {data['subject']}" #subject defined in the serializer
+            message = f"From: {data['name']} Message:\n{data['message']}" #name and message defined in the serializer
+            sender_email = settings.EMAIL_HOST_USER #sender email defined in the settings file
+            send_mail( #default django function to send email, the structure below is default
+                subject,
+                message,
+                sender_email,
+                [data['to_email']],
+                fail_silently=False,
+            )
+            return Response({"status": "Email sent successfully"}, status=200)
+        return Response(serializer.errors, status=400)

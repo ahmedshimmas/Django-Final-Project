@@ -27,6 +27,7 @@ router.register(r'employees', apis.EmployeeAPI, basename='employee')
 router.register(r'inventory', apis.InventoryAPI, basename='inventory')
 router.register(r'leave', apis.LeaveAPI, basename='leave')
 router.register(r'register', apis.RegisterAPI, basename='register')
+router.register(r'public_email', apis.PublicViewSet, basename='public_email') #to access this API use /api/public_email/contact_us/ 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
